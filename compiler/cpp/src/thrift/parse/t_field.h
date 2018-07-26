@@ -37,11 +37,23 @@ class t_struct;
  */
 class t_field : public t_doc {
 public:
+  t_field(t_type* type, std::string name, bool masked)
+    : type_(type),
+      name_(name),
+      key_(0),
+      value_(NULL),
+      masked_(masked),
+      xsd_optional_(false),
+      xsd_nillable_(false),
+      xsd_attrs_(NULL),
+      reference_(false) {}
+
   t_field(t_type* type, std::string name)
     : type_(type),
       name_(name),
       key_(0),
       value_(NULL),
+      masked_(false),
       xsd_optional_(false),
       xsd_nillable_(false),
       xsd_attrs_(NULL),
@@ -53,6 +65,7 @@ public:
       key_(key),
       req_(T_OPT_IN_REQ_OUT),
       value_(NULL),
+      masked_(false),
       xsd_optional_(false),
       xsd_nillable_(false),
       xsd_attrs_(NULL),
@@ -88,6 +101,11 @@ public:
 
   bool get_xsd_nillable() const { return xsd_nillable_; }
 
+  void set_masked(bool masked) { masked_ = masked; }
+
+  bool get_masked() const { return masked_; }
+
+
   void set_xsd_attrs(t_struct* xsd_attrs) { xsd_attrs_ = xsd_attrs; }
 
   t_struct* get_xsd_attrs() { return xsd_attrs_; }
@@ -115,6 +133,7 @@ private:
   int32_t key_;
   e_req req_;
   t_const_value* value_;
+  bool masked_;
 
   bool xsd_optional_;
   bool xsd_nillable_;

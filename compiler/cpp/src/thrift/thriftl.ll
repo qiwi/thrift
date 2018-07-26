@@ -218,6 +218,7 @@ literal_begin (['\"])
 "smalltalk_prefix"   { error_unsupported_namespace_decl("smalltalk_category", "smalltalk.category"); /* do nothing */ }
 "xsd_all"            { return tok_xsd_all;              }
 "xsd_optional"       { return tok_xsd_optional;         }
+"masked"             { return tok_masked;               }
 "xsd_nillable"       { return tok_xsd_nillable;         }
 "xsd_namespace"      { error_unsupported_namespace_decl("xsd"); /* do nothing */ }
 "xsd_attrs"          { return tok_xsd_attrs;            }

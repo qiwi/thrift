@@ -169,6 +169,8 @@ const int struct_is_union = 1;
 %token tok_optional
 %token tok_union
 %token tok_reference
+%token tok_masked
+
 
 /**
  * Grammar nodes
@@ -199,6 +201,7 @@ const int struct_is_union = 1;
 %type<tconstv>   FieldValue
 %type<tstruct>   FieldList
 %type<tbool>     FieldReference
+%type<tbool>     FieldMasked
 
 %type<tenum>     Enum
 %type<tenum>     EnumDefList
@@ -707,6 +710,16 @@ XsdOptional:
       $$ = false;
     }
 
+FieldMasked:
+  tok_masked
+    {
+      $$ = true;
+    }
+|
+    {
+      $$ = false;
+    }
+
 XsdNillable:
   tok_xsd_nillable
     {
@@ -854,7 +867,7 @@ FieldList:
     }
 
 Field:
-  CaptureDocText FieldIdentifier FieldRequiredness FieldType FieldReference tok_identifier FieldValue XsdOptional XsdNillable XsdAttributes TypeAnnotations CommaOrSemicolonOptional
+  CaptureDocText FieldIdentifier FieldRequiredness FieldType FieldReference tok_identifier FieldValue XsdOptional XsdNillable XsdAttributes TypeAnnotations FieldMasked CommaOrSemicolonOptional
     {
       pdebug("tok_int_constant : Field -> FieldType tok_identifier");
       if ($2.auto_assigned) {
@@ -868,6 +881,7 @@ Field:
       $$ = new t_field($4, $6, $2.value);
       $$->set_reference($5);
       $$->set_req($3);
+      $$->set_masked($12);
       if ($7 != NULL) {
         g_scope->resolve_const_value($7, $4);
         validate_field_value($$, $7);
@@ -875,6 +889,7 @@ Field:
       }
       $$->set_xsd_optional($8);
       $$->set_xsd_nillable($9);
+
       if ($1 != NULL) {
         $$->set_doc($1);
       }
