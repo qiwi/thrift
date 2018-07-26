@@ -2299,18 +2299,18 @@ void t_java_generator::generate_java_bean_boilerplate(ofstream& out, t_struct* t
         if (is_deprecated) {
           indent(out) << "@Deprecated" << endl;
         }
-        indent(out) << "public org.apache.thrift.Option<java.util.Iterator<" << type_name(element_type, true, false)
+        indent(out) << "public java.util.Optional<java.util.Iterator<" << type_name(element_type, true, false)
                     << ">> get" << cap_name;
         out << get_cap_name("iterator() {") << endl;
 
         indent_up();
         indent(out) << "if (this." << field_name << " == null) {" << endl;
         indent_up();
-        indent(out) << "return org.apache.thrift.Option.none();" << endl;
+        indent(out) << "return java.util.Optional.empty();" << endl;
         indent_down();
         indent(out) << "} else {" << endl;
         indent_up();
-        indent(out) << "return org.apache.thrift.Option.some(this." << field_name << ".iterator());" << endl;
+        indent(out) << "return java.util.Optional.of(this." << field_name << ".iterator());" << endl;
         indent_down();
         indent(out) << "}" << endl;
         indent_down();
