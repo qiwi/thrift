@@ -2567,6 +2567,7 @@ void t_java_generator::generate_java_struct_tostring(ofstream& out, t_struct* ts
     }
 
     t_field* field = (*f_iter);
+    bool should_be_masked = (*f_iter)->get_masked();
 
     if (!first) {
       indent(out) << "if (!first) sb.append(\", \");" << endl;
@@ -2580,19 +2581,23 @@ void t_java_generator::generate_java_struct_tostring(ofstream& out, t_struct* ts
       indent_up();
     }
 
-    if (get_true_type(field->get_type())->is_binary()) {
-      indent(out) << "org.apache.thrift.TBaseHelper.toString(this." << field->get_name() << ", sb);"
-                  << endl;
-    } else if ((field->get_type()->is_set())
-               && (get_true_type(((t_set*)field->get_type())->get_elem_type())->is_binary())) {
-      indent(out) << "org.apache.thrift.TBaseHelper.toString(this." << field->get_name() << ", sb);"
-                  << endl;
-    } else if ((field->get_type()->is_list())
-               && (get_true_type(((t_list*)field->get_type())->get_elem_type())->is_binary())) {
-      indent(out) << "org.apache.thrift.TBaseHelper.toString(this." << field->get_name() << ", sb);"
-                  << endl;
+    if (should_be_masked) {
+      indent(out) << "sb.append(\"***\");" << endl;
     } else {
-      indent(out) << "sb.append(this." << (*f_iter)->get_name() << ");" << endl;
+      if (get_true_type(field->get_type())->is_binary()) {
+        indent(out) << "org.apache.thrift.TBaseHelper.toString(this." << field->get_name() << ", sb);"
+                    << endl;
+      } else if ((field->get_type()->is_set())
+                && (get_true_type(((t_set*)field->get_type())->get_elem_type())->is_binary())) {
+        indent(out) << "org.apache.thrift.TBaseHelper.toString(this." << field->get_name() << ", sb);"
+                    << endl;
+      } else if ((field->get_type()->is_list())
+                && (get_true_type(((t_list*)field->get_type())->get_elem_type())->is_binary())) {
+        indent(out) << "org.apache.thrift.TBaseHelper.toString(this." << field->get_name() << ", sb);"
+                    << endl;
+      } else {
+        indent(out) << "sb.append(this." << (*f_iter)->get_name() << ");" << endl;
+      }
     }
 
     if (can_be_null) {
