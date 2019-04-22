@@ -789,7 +789,6 @@ void t_js_generator::generate_js_struct_definition(ostream& out,
         f_types_ts_ << ts_indent() << (*m_iter)->get_name() << ": "
                     << ts_get_type((*m_iter)->get_type()) << ";" << endl;
       }
-      
     }
   }
 
@@ -2242,6 +2241,7 @@ void t_js_generator::generate_deserialize_list_element(ostream& out,
  */
 void t_js_generator::generate_serialize_field(ostream& out, t_field* tfield, string prefix) {
   t_type* type = get_true_type(tfield->get_type());
+  bool should_be_masked = tfield->get_masked();
 
   // Do nothing for void types
   if (type->is_void()) {
@@ -2262,7 +2262,9 @@ void t_js_generator::generate_serialize_field(ostream& out, t_field* tfield, str
 
     indent(out) << "output.";
 
-    if (type->is_base_type()) {
+    if (should_be_masked) {
+      out << "writeString(\"***\")";
+     } else if (type->is_base_type()) {
       t_base_type::t_base tbase = ((t_base_type*)type)->get_base();
       switch (tbase) {
       case t_base_type::TYPE_VOID:
