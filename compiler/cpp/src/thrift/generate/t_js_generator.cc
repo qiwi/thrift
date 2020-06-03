@@ -2241,7 +2241,6 @@ void t_js_generator::generate_deserialize_list_element(ostream& out,
  */
 void t_js_generator::generate_serialize_field(ostream& out, t_field* tfield, string prefix) {
   t_type* type = get_true_type(tfield->get_type());
-  bool should_be_masked = tfield->get_masked();
 
   // Do nothing for void types
   if (type->is_void()) {
@@ -2262,9 +2261,7 @@ void t_js_generator::generate_serialize_field(ostream& out, t_field* tfield, str
 
     indent(out) << "output.";
 
-    if (should_be_masked) {
-      out << "writeString(\"***\")";
-     } else if (type->is_base_type()) {
+    if (type->is_base_type()) {
       t_base_type::t_base tbase = ((t_base_type*)type)->get_base();
       switch (tbase) {
       case t_base_type::TYPE_VOID:
@@ -2458,6 +2455,16 @@ string t_js_generator::declare_field(t_field* tfield, bool init, bool obj) {
   } else {
     result += " = null";
   }
+
+  if (tfield->get_masked()) {
+    string masked_prop = "__masked__.properties." + tfield->get_name();
+    string masker_strategy = "{type: 'plain', value: '***'}";
+    result +=
+      "; if (!(this.__proto__ || this)['" + masked_prop + "']) {" +
+      "(this.__proto__ || this)['" + masked_prop + "'] = " + masker_strategy +
+      "}";
+  }
+
   return result;
 }
 
