@@ -2414,10 +2414,22 @@ void t_js_generator::generate_serialize_list_element(ostream& out, t_list* tlist
  * @param ttype The type
  */
 string t_js_generator::declare_field(t_field* tfield, bool init, bool obj) {
-  string result = "this." + tfield->get_name();
+  string field_name = tfield->get_name();
+  string result;
 
-  if (!obj) {
-    result = js_let_type_ + tfield->get_name();
+  if (obj) {
+    if (tfield->get_masked()) {
+      string masked_prop = "__masked__.properties." + field_name;
+      string masker_strategy = "{type: 'plain', value: '***'}";
+      result =
+        "Object.defineProperty(this, '" + field_name + "', {enumerable: false, writable: true});" + endl +
+        ts_indent() + "if (!(this.__proto__ || this)['" + masked_prop + "']) {" + endl +
+        ts_indent() + "(this.__proto__ || this)['" + masked_prop + "'] = " + masker_strategy + endl +
+        ts_indent() + "}" + endl;
+    }
+    result += ts_indent() + "this." + field_name;
+  } else {
+    result = js_let_type_ + field_name;
   }
 
   if (init) {
@@ -2454,15 +2466,6 @@ string t_js_generator::declare_field(t_field* tfield, bool init, bool obj) {
     }
   } else {
     result += " = null";
-  }
-
-  if (tfield->get_masked()) {
-    string masked_prop = "__masked__.properties." + tfield->get_name();
-    string masker_strategy = "{type: 'plain', value: '***'}";
-    result +=
-      "; if (!(this.__proto__ || this)['" + masked_prop + "']) {" +
-      "(this.__proto__ || this)['" + masked_prop + "'] = " + masker_strategy +
-      "}";
   }
 
   return result;
