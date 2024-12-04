@@ -215,6 +215,7 @@ public:
 
   void generate_union_comparisons(ofstream& out, t_struct* tstruct);
   void generate_union_hashcode(ofstream& out, t_struct* tstruct);
+  void generate_union_tostring(ofstream& out, t_struct* tstruct);
 
   void generate_scheme_map(ofstream& out, t_struct* tstruct);
   void generate_standard_writer(ofstream& out, t_struct* tstruct, bool is_result);
@@ -862,6 +863,10 @@ void t_java_generator::generate_java_union(t_struct* tstruct) {
 
   f_struct << endl;
 
+  generate_union_tostring(f_struct, tstruct);
+
+  f_struct << endl;
+
   generate_java_struct_write_object(f_struct, tstruct);
 
   f_struct << endl;
@@ -1365,7 +1370,52 @@ void t_java_generator::generate_union_hashcode(ofstream& out, t_struct* tstruct)
   indent(out) << "    }" << endl;
   indent(out) << "  }" << endl;
   indent(out) << "  return list.hashCode();" << endl;
-  indent(out) << "}";
+  indent(out) << "}" << endl;
+}
+
+void t_java_generator::generate_union_tostring(ofstream& out, t_struct* tstruct) {
+  (void)tstruct;
+  const vector<t_field*>& members = tstruct->get_members();
+  vector<t_field*>::const_iterator m_iter;
+  bool has_masked_fields = false;
+  for (m_iter = members.begin(); m_iter != members.end(); ++m_iter) {
+    if ((*m_iter)->get_masked()) {
+      has_masked_fields = true;
+    }
+  }
+  if (!has_masked_fields) {
+    return;
+  }
+
+  indent(out) << "private static boolean isMasked(_Fields setField) {" << endl;
+  indent(out) << "  switch (setField) {" << endl;
+  for (m_iter = members.begin(); m_iter != members.end(); ++m_iter) {
+    if ((*m_iter)->get_masked()) {
+      indent(out) << "    case " << constant_name((*m_iter)->get_name()) << ":" << endl;
+      indent(out) << "      return true;" << endl;
+    }
+  }
+  indent(out) << "    default:" << endl;
+  indent(out) << "      return false;" << endl;
+  indent(out) << "  }" << endl;
+  indent(out) << "}" << endl;
+  out << endl;
+
+  indent(out) << "@Override" << endl;
+  indent(out) << "public String toString() {" << endl;
+  indent(out) << "  _Fields settedField = getSetField();" << endl;
+  indent(out) << "  if (settedField == null || !isMasked(settedField)) {" << endl;
+  indent(out) << "    return super.toString();" << endl;
+  indent(out) << "  }" << endl;
+  out << endl;
+  indent(out) << "  StringBuilder sb = new StringBuilder();" << endl;
+  indent(out) << "  sb.append(\"<\");" << endl;
+  indent(out) << "  sb.append(this.getClass().getSimpleName());" << endl;
+  indent(out) << "  sb.append(\" \");" << endl;
+  indent(out) << "  sb.append(getFieldDesc(settedField).name);" << endl;
+  indent(out) << "  sb.append(\":***>\");" << endl;
+  indent(out) << "  return sb.toString();" << endl;
+  indent(out) << "}" << endl;
 }
 
 /**
